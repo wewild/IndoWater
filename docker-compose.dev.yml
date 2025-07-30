@@ -1,0 +1,171 @@
+version: '3.8'
+
+services:
+  # PHP API Backend
+  api:
+    image: indowater/api:develop
+    container_name: indowater-api
+    restart: unless-stopped
+    volumes:
+      - ./api/storage:/var/www/html/storage
+      - ./api/logs:/var/www/html/storage/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - indowater-network
+    ports:
+      - "8000:80"
+    environment:
+      - APP_ENV=development
+      - APP_DEBUG=true
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=indowater
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=null
+      - MAIL_PASSWORD=null
+      - MAIL_ENCRYPTION=null
+      - JWT_SECRET=${JWT_SECRET}
+      - MIDTRANS_SERVER_KEY=${MIDTRANS_SERVER_KEY}
+      - MIDTRANS_CLIENT_KEY=${MIDTRANS_CLIENT_KEY}
+      - MIDTRANS_ENVIRONMENT=sandbox
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: indowater-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: indowater
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - indowater-db-data:/var/lib/mysql
+    networks:
+      - indowater-network
+    ports:
+      - "3306:3306"
+
+  # React Frontend
+  frontend:
+    image: indowater/frontend:develop
+    container_name: indowater-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - indowater-network
+    ports:
+      - "3000:80"
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: indowater-redis
+    restart: unless-stopped
+    networks:
+      - indowater-network
+    volumes:
+      - indowater-redis-data:/data
+
+  # Mailhog Service (for email testing)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: indowater-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # Web UI port
+    networks:
+      - indowater-network
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus
+    container_name: indowater-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - indowater-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana
+    container_name: indowater-grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    networks:
+      - indowater-network
+    depends_on:
+      - prometheus
+
+  # ELK Stack for logging
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: indowater-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - indowater-network
+    ports:
+      - "9200:9200"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: indowater-logstash
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./api/logs:/logs
+    networks:
+      - indowater-network
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: indowater-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - indowater-network
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+networks:
+  indowater-network:
+    driver: bridge
+
+volumes:
+  indowater-db-data:
+    driver: local
+  indowater-redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
