@@ -28,9 +28,16 @@ import 'package:indowater_mobile/screens/auth/verify_email_screen.dart';
 
 import 'package:indowater_mobile/screens/dashboard/dashboard_screen.dart';
 import 'package:indowater_mobile/screens/meters/meters_screen.dart';
+import 'package:indowater_mobile/screens/meters/meter_details_screen.dart';
+import 'package:indowater_mobile/screens/meters/add_meter_screen.dart';
 import 'package:indowater_mobile/screens/consumption/consumption_screen.dart';
+import 'package:indowater_mobile/screens/consumption/consumption_history_screen.dart';
 import 'package:indowater_mobile/screens/payments/payments_screen.dart';
+import 'package:indowater_mobile/screens/payments/payment_details_screen.dart';
 import 'package:indowater_mobile/screens/topup/topup_screen.dart';
+import 'package:indowater_mobile/screens/topup/topup_confirmation_screen.dart';
+import 'package:indowater_mobile/screens/topup/topup_success_screen.dart';
+import 'package:indowater_mobile/screens/topup/topup_failed_screen.dart';
 import 'package:indowater_mobile/screens/profile/profile_screen.dart';
 
 import 'package:indowater_mobile/providers/theme_provider.dart';
@@ -123,20 +130,78 @@ class MyApp extends StatelessWidget {
         );
       },
       initialRoute: AppRoutes.splash,
-      routes: {
-        AppRoutes.splash: (context) => const SplashScreen(),
-        AppRoutes.onboarding: (context) => const OnboardingScreen(),
-        AppRoutes.login: (context) => const LoginScreen(),
-        AppRoutes.register: (context) => const RegisterScreen(),
-        AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
-        AppRoutes.resetPassword: (context) => const ResetPasswordScreen(),
-        AppRoutes.verifyEmail: (context) => const VerifyEmailScreen(),
-        AppRoutes.dashboard: (context) => const DashboardScreen(),
-        AppRoutes.meters: (context) => const MetersScreen(),
-        AppRoutes.consumption: (context) => const ConsumptionScreen(),
-        AppRoutes.payments: (context) => const PaymentsScreen(),
-        AppRoutes.topup: (context) => const TopupScreen(),
-        AppRoutes.profile: (context) => const ProfileScreen(),
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case AppRoutes.splash:
+            return MaterialPageRoute(builder: (_) => const SplashScreen());
+          case AppRoutes.onboarding:
+            return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+          case AppRoutes.login:
+            return MaterialPageRoute(builder: (_) => const LoginScreen());
+          case AppRoutes.register:
+            return MaterialPageRoute(builder: (_) => const RegisterScreen());
+          case AppRoutes.forgotPassword:
+            return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+          case AppRoutes.resetPassword:
+            return MaterialPageRoute(builder: (_) => const ResetPasswordScreen());
+          case AppRoutes.verifyEmail:
+            return MaterialPageRoute(builder: (_) => const VerifyEmailScreen());
+          case AppRoutes.dashboard:
+            return MaterialPageRoute(builder: (_) => const DashboardScreen());
+          case AppRoutes.meters:
+            return MaterialPageRoute(builder: (_) => const MetersScreen());
+          case AppRoutes.meterDetails:
+            final args = settings.arguments as Map<String, dynamic>?;
+            final meterId = args?['meter_id'] as String? ?? '';
+            return MaterialPageRoute(builder: (_) => MeterDetailsScreen(meterId: meterId));
+          case AppRoutes.addMeter:
+            return MaterialPageRoute(builder: (_) => const AddMeterScreen());
+          case AppRoutes.consumption:
+            return MaterialPageRoute(builder: (_) => const ConsumptionScreen());
+          case AppRoutes.consumptionHistory:
+            final args = settings.arguments as Map<String, dynamic>?;
+            final meterId = args?['meter_id'] as String?;
+            return MaterialPageRoute(builder: (_) => ConsumptionHistoryScreen(meterId: meterId));
+          case AppRoutes.payments:
+            return MaterialPageRoute(builder: (_) => const PaymentsScreen());
+          case AppRoutes.paymentDetails:
+            final args = settings.arguments as Map<String, dynamic>?;
+            final paymentId = args?['payment_id'] as String? ?? '';
+            return MaterialPageRoute(builder: (_) => PaymentDetailsScreen(paymentId: paymentId));
+          case AppRoutes.topup:
+            final args = settings.arguments as Map<String, dynamic>?;
+            final meterId = args?['meter_id'] as String?;
+            return MaterialPageRoute(builder: (_) => TopupScreen(meterId: meterId));
+          case AppRoutes.topupConfirmation:
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => TopupConfirmationScreen(
+                amount: args['amount'] as double,
+                paymentId: args['payment_id'] as String,
+                status: args['status'] as String,
+              ),
+            );
+          case AppRoutes.topupSuccess:
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => TopupSuccessScreen(
+                amount: args['amount'] as double,
+                paymentId: args['payment_id'] as String,
+              ),
+            );
+          case AppRoutes.topupFailed:
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => TopupFailedScreen(
+                amount: args['amount'] as double,
+                error: args['error'] as String,
+              ),
+            );
+          case AppRoutes.profile:
+            return MaterialPageRoute(builder: (_) => const ProfileScreen());
+          default:
+            return MaterialPageRoute(builder: (_) => const SplashScreen());
+        }
       },
     );
   }

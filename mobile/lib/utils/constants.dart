@@ -148,6 +148,15 @@ class Constants {
     'doku'
   ];
   
+  // Midtrans Configuration
+  static const String midtransClientKey = 'SB-Mid-client-xxxxxxxxxxxxxxxx'; // Replace with actual client key
+  static const String midtransMerchantBaseUrl = 'https://api.sandbox.midtrans.com'; // Use production URL for production
+  
+  // DOKU Configuration
+  static const String dokuClientId = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'; // Replace with actual client ID
+  static const String dokuSecretKey = 'SK-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; // Replace with actual secret key
+  static const String dokuApiUrl = 'https://api-sandbox.doku.com'; // Use production URL for production
+  
   // Meter Status
   static const List<String> meterStatus = [
     'active',

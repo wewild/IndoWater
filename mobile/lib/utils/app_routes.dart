@@ -19,6 +19,7 @@ class AppRoutes {
   // Meter Routes
   static const String meterDetails = '/meters/details';
   static const String addMeter = '/meters/add';
+  static const String submitReading = '/meters/submit-reading';
   
   // Consumption Routes
   static const String consumptionDetails = '/consumption/details';
@@ -27,6 +28,7 @@ class AppRoutes {
   // Payment Routes
   static const String paymentDetails = '/payments/details';
   static const String paymentHistory = '/payments/history';
+  static const String payBill = '/payments/pay-bill';
   
   // Topup Routes
   static const String topupConfirmation = '/topup/confirmation';
